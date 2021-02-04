@@ -2,6 +2,7 @@ from course import Course
 from room import Room
 from slot import Slot
 from clause import Clause
+from clause import Clause
 from literal import Literal
 from pysat.formula import WCNFPlus
 
@@ -17,6 +18,8 @@ class TimeTabler:
         self.courses_to_int = {}
         self.CNF = WCNFPlus()
         self.slots = []
+        self.faculties = []
+        self.students = []
         self.rooms = []
         self.room_to_int = {}
         self.clauses = []
@@ -63,9 +66,9 @@ class TimeTabler:
             return ((len(self.courses) * len(self.rooms)) + (literal.course * literal.room_slot)) * (
                 -1 if literal.Not else 1)
 
-    def room_clashes_constraint(self):
+    def room_clash_constraint(self):
         """
-        ~Cc1Ss | ~Cc2Ss | ~Cc1Rr | ~Cc2
+        ~Cc1Ss | ~Cc2Ss | ~Cc1Rr | ~Cc2Rr
         :return:
         """
 
@@ -79,3 +82,62 @@ class TimeTabler:
                         clause.add_literal(Literal(2, c1, r, True))
                         clause.add_literal(Literal(2, c2, r, True))
                         self.add_clause(clause)
+
+    def faculty_clash_constraint(self):
+        """
+        ~Cc1Ss | ~Cc2Ss
+        :return:
+        """
+
+        for fac in range(len(self.faculties)):
+            for c1 in range(len(fac.courses)):
+                for c2 in range(len(fac.courses)):
+                    for s in range(len(self.slots)):
+                        if(c1!=c2):
+                            clause = Clause(-1)
+                            clause.add_literal(Literal(1, c1, s, True))
+                            clause.add_literal(Literal(1, c2, s, True))
+                            self.add_clause(clause)
+
+    def student_clash_constraint(self):
+        """
+        ~Cc1Ss | ~Cc2Ss
+        :return:
+        """
+
+        for stu in range(len(self.students)):
+            for c1 in range(len(stu.courses)):
+                for c2 in range(len(stu.courses)):
+                    for s in range(len(self.slots)):
+                        if(c1!=c2):
+                            clause = Clause(-1)
+                            clause.add_literal(Literal(1, c1, s, True))
+                            clause.add_literal(Literal(1, c2, s, True))
+                            self.add_clause(clause)
+
+    def roomPerCourse_and_roomSize_constraint(self):
+        """
+        exactly one(CcRr) given r.size > s.size
+        :return:
+        """
+
+        for c in range(len(self.courses)):
+            clause = Clause(-1)
+            for r in range(len(self.rooms)):
+                if(c.size<r.size):
+                    clause.add_literal(Literal(2, c, r, False))
+            # exactly one of all these literals true
+            self.add_clause(clause)
+
+    def assign_slots_constraint(self):
+
+        for c in range(len(self.courses)):
+            clause = Clause(-1)
+            for s in range(len(self.slots)):
+                if(c.timing=="morning" and s.start_time<"2"):
+                    clause.add_literal(Literal(1, c, s, False))
+                elif(c.timing=="evening" and s.start_time>="2"):
+                    clause.add_literal(Literal(1, c, s, False))
+            #exactly "c.number_of_lectures" of all these literals true            
+            self.add_clause(clause)                      
+
