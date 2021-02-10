@@ -25,3 +25,12 @@ def generate_reverse_dictionary():
     reverse_time['time'] = reverse_time
     return reverse_dict
 
+def format_result(obj):
+    for c in obj.keys():
+        print(c+": ")
+        for key in obj[c].keys():
+            print('\t', end="")
+            print(key+":", end=" ")
+            print(obj[c][key])
+        print('-'*50)
+        

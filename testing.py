@@ -2,12 +2,12 @@ from course import Course
 from room import Room
 from faculty import Faculty
 from timetabler import TimeTabler
-from utils import generate_slots
+from utils import generate_slots, format_result
 
 # courses  = [[code, number_of_lectures, size, faculty, students, timing ,year]]
 courses = [["IPH-305", 2, 60, ["F1"], [], 'evening', 3],
             ["PHN-311", 6, 60, ["F2", "F1"], [], 'evening', 3],
-            ["PHN-313", 3, 60, ["F3"], [], 'evening', 3],
+            ["PHN-313", 6, 60, ["F3"], [], 'evening', 3],
             ["PHN-315", 3, 60, ["F4"], [], 'evening', 3],
             ["PHN-317", 2, 60, ["F4"], [], 'evening', 3],
             ["PHN-319", 3, 60, ["F5"], [], 'evening', 3],
