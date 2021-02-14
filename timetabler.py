@@ -2,7 +2,7 @@ from course import Course
 from room import Room
 from slot import Slot
 from clause import Clause
-from clause import Clause
+from faculty import Faculty
 from literal import Literal
 from pysat.formula import WCNF
 from pysat.examples.rc2 import RC2
@@ -28,13 +28,28 @@ class TimeTabler:
         self.room_to_int = {}
         self.clauses = []
         self.clauses_converted = 0
-        self.set1 = {}
+        self.set1 = []
+        self.slot_to_index = {}
+        self.faculty_code_map = {}
 
     def add_course(self, course):
         assert isinstance(course, Course), "course must be an Course type"
         assert course.code not in self.courses_to_int.keys(), "course code already exist"
         self.courses_to_int[course.code] = len(self.courses)
         self.courses.append(course)
+        return True
+
+    def add_course_pair(self, course_pair):
+        assert course_pair[0] in self.courses_to_int.keys(), "incorrect course code"
+        assert course_pair[1] in self.courses_to_int.keys(), "incorrect course code"
+        self.set1.append(course_pair)
+        return True
+
+    def add_faculty(self, faculty):
+        assert isinstance(faculty, Faculty), "Faculty must be an Faculty type"
+        self.faculties.append(faculty)
+        self.faculty_code_map[faculty.code] = faculty.preference
+        # print(faculty[1])
         return True
 
     def add_room(self, room):
@@ -46,12 +61,12 @@ class TimeTabler:
 
     def add_slots(self, slot):
         assert isinstance(slot, Slot), "slot must be an slot type"
+        self.slot_to_index[slot.day*100 + slot.start_time] = len(self.slots)
         self.slots.append(slot)
         return True
 
     def add_clause(self, clause):
         assert isinstance(clause, Clause), "Clause must be an Clause type"
-
         self.clauses.append(clause)
         return True
 
@@ -86,7 +101,7 @@ class TimeTabler:
 
     def at_least(self, clause, k):
         n = len(clause.literals)
-        print(n,k)
+        # print(n,k)
         self.at_most(clause, max(n - k, 0), at_least=True)
 
     def convert_literal(self, literal):
@@ -115,7 +130,7 @@ class TimeTabler:
                             clause.add_literal(Literal(2, c2 + 1, r + 1, True))
                             self.add_clause(clause)
 
-    def room_per_course_and_room_size_constraint(self):
+    def course_room_assignment(self):
         """
         exactly one(CcRr) given r.size >= c.size
         and
@@ -135,7 +150,7 @@ class TimeTabler:
             # exactly one of all these literals true
             self.add_clause(clause)
 
-    def assign_slots_constraint(self):
+    def slot_assignment(self):
         """
         Morning slots before 2 and Evening after 2
         and
@@ -146,40 +161,40 @@ class TimeTabler:
         for c in range(len(self.courses)):
             clause = Clause(-1, at_most=self.courses[c].number_of_lectures, at_least=self.courses[c].number_of_lectures)
             for s in range(len(self.slots)):
-                if self.courses[c].timing == "morning" and self.slots[s].start_time < 5:
+                if self.courses[c].timing == "morning" and self.slots[s].start_time <= 5:
                     clause.add_literal(Literal(1, c + 1, s + 1, False))
-                elif self.courses[c].timing == "evening" and self.slots[s].start_time >= 5:
+                elif self.courses[c].timing == "evening" and self.slots[s].start_time > 6:
                     clause.add_literal(Literal(1, c + 1, s + 1, False))
             self.add_clause(clause)
 
-    def fac_stu_course_clash_constraint(self):
+    def course_clash_constraint(self):
         """
         ~Cc1Ss | ~Cc2Ss
         :return:
         """
 
         for c in self.set1:
-            if (c[0] != c[1]):
-                for s in range(len(self.slots)):
-                    clause = Clause(-1)
-                    clause.add_literal(Literal(1, c[0], s, True))
-                    clause.add_literal(Literal(1, c[1], s, True))
-                    self.add_clause(clause)
+            for s in range(len(self.slots)):
+                clause = Clause(-1)
+                clause.add_literal(Literal(1, self.courses_to_int[c[0]]+1, s+1, True))
+                clause.add_literal(Literal(1, self.courses_to_int[c[1]]+1, s+1, True))
+                self.add_clause(clause)
 
-    def prof_prefernce_constraint(self):
+    def preference_constraint(self):
         """
         CcSs
         :return:
         """
-
-        for f in self.faculties:
-            for c in f.courses:
-                for s in f.prefernce:
-                    clause = Clause(500)
-                    clause.add_literal(Literal(1, c, s, False))
+        # self.generate_faculty_map()
+        for c in self.courses:
+            for f in c.faculty:
+                for s in self.faculty_code_map[f]:
+                    var = s[0]*100 + s[1]
+                    clause = Clause(1)
+                    clause.add_literal(Literal(1, self.courses_to_int[c.code]+1, self.slot_to_index[var]+1, False))
                     self.add_clause(clause)
 
-    def one_lec_in_one_day(self):
+    def lecture_per_day_constraint(self):
         """
         atmost 1 of all CcSs (s belongs to a particular day)
         :return:

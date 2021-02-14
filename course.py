@@ -6,7 +6,6 @@ class Course:
         assert isinstance(code, str), "course code must be an string"
         assert isinstance(number_of_lectures, int), "number_of_lectures mus be an integer."
         assert isinstance(size, int), "size must be an integer"
-        # assert isinstance(room, Room), "room must be an instance of 'Room'."
         assert isinstance(student, list), "student must be a list of 'Student' instance"
         assert isinstance(faculty, list), "faculty must be a list of 'Faculty' instance"
         assert isinstance(year, int), "Year should be an integer value"
@@ -16,7 +15,6 @@ class Course:
         self.code = code
         self.number_of_lectures = number_of_lectures
         self.size = size
-        # self.room = room
         self.faculty = faculty
         self.student = student
         self.timing = timing
