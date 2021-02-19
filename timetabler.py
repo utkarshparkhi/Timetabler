@@ -81,12 +81,15 @@ class TimeTabler:
             if clause.at_least is not None:
                 self.at_least(clause, clause.at_least)
             if clause.at_most is None and clause.at_least is None:
-                self.add_CNF(clause)
+                self.add_cnf(clause)
         self.clauses_converted = len(self.clauses)
         return True
 
-    def add_CNF(self, clause):
+    def add_cnf(self, clause):
         converted_clause = [self.convert_literal(literal) for literal in clause.literals]
+        if clause.weight == -1:
+            self.CNF.append(converted_clause)
+            return True
         self.CNF.append(converted_clause, weight=clause.weight)
         return True
 
@@ -97,11 +100,10 @@ class TimeTabler:
                 new_lit = copy.deepcopy(lit)
                 new_lit.Not ^= (True ^ at_least)
                 new_cls.add_literal(new_lit)
-            self.add_CNF(new_cls)
+            self.add_cnf(new_cls)
 
     def at_least(self, clause, k):
         n = len(clause.literals)
-        # print(n,k)
         self.at_most(clause, max(n - k, 0), at_least=True)
 
     def convert_literal(self, literal):
@@ -185,7 +187,6 @@ class TimeTabler:
         CcSs
         :return:
         """
-        # self.generate_faculty_map()
         for c in self.courses:
             for f in c.faculty:
                 for s in self.faculty_code_map[f]:
@@ -217,6 +218,9 @@ class TimeTabler:
         print("solving MAXSAT")
         model = rc2.compute()
         print("MAXSAT solved")
+        if model is None:
+            print("All hard clauses not satisfied")
+            return None
         result = {}
         for c in range(len(self.courses)):
             slots = []
