@@ -231,9 +231,7 @@ class TimeTabler:
         for c in range(len(self.courses)):
             if self.courses[c].room_assigned():
                 if self.courses[c].room.name in self.room_to_index.keys():
-                    print(self.courses[c].room.name)
                     r = self.room_to_index[self.courses[c].room.name]
-                    print(r)
                     clause = Clause(-1)
                     clause.add_literal(Literal(2, c + 1, r + 1, False))
                     self.add_clause(clause)
