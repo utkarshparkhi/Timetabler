@@ -1,8 +1,9 @@
 from room import Room
+from slot import Slot
 
 
 class Course:
-    def __init__(self, code, number_of_lectures, size, faculty, student, timing,  year):
+    def __init__(self, code, number_of_lectures, size, faculty, student, timing, year):
         assert isinstance(code, str), "course code must be an string"
         assert isinstance(number_of_lectures, int), "number_of_lectures mus be an integer."
         assert isinstance(size, int), "size must be an integer"
@@ -18,6 +19,9 @@ class Course:
         self.faculty = faculty
         self.student = student
         self.timing = timing
+        self.type = set()
+        self.slots = []
+        self.room = None
 
     def check_faculty_codes(self, faculty):
         for fac in faculty:
@@ -30,3 +34,21 @@ class Course:
             if not isinstance(stu, int):
                 return False
         return True
+
+    def add_type(self, type):
+        assert isinstance(type, str)
+        self.type.add(type)
+        return True
+
+    def add_slot(self, slot):
+        assert isinstance(slot, Slot)
+        if len(self.slots) == self.number_of_lectures:
+            raise Exception("All lectures have been assigned a slot")
+        self.slots.append(slot)
+
+    def add_room(self, room):
+        assert isinstance(room, Room)
+        self.room = room
+
+    def room_assigned(self):
+        return self.room is not None

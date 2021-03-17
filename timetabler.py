@@ -25,7 +25,7 @@ class TimeTabler:
         self.faculties = []
         self.students = []
         self.rooms = []
-        self.room_to_int = {}
+        self.room_to_index = {}
         self.clauses = []
         self.clauses_converted = 0
         self.set1 = []
@@ -49,19 +49,18 @@ class TimeTabler:
         assert isinstance(faculty, Faculty), "Faculty must be an Faculty type"
         self.faculties.append(faculty)
         self.faculty_code_map[faculty.code] = faculty.preference
-        # print(faculty[1])
         return True
 
     def add_room(self, room):
         assert isinstance(room, Room), TypeError("room must be a Room type")
-        assert room.name not in self.room_to_int.keys(), "room already exists"
-        self.room_to_int[room.name] = len(self.rooms)
+        assert room.name not in self.room_to_index.keys(), "room already exists"
+        self.room_to_index[room.name] = len(self.rooms)
         self.rooms.append(room)
         return True
 
     def add_slots(self, slot):
         assert isinstance(slot, Slot), "slot must be an slot type"
-        self.slot_to_index[slot.day*100 + slot.start_time] = len(self.slots)
+        self.slot_to_index[slot.day * 100 + slot.start_time] = len(self.slots)
         self.slots.append(slot)
         return True
 
@@ -108,10 +107,10 @@ class TimeTabler:
 
     def convert_literal(self, literal):
         if literal.Type == 1:
-            return (((literal.course-1) * len(self.slots)) + literal.room_slot) * (-1 if literal.Not else 1)
+            return (((literal.course - 1) * len(self.slots)) + literal.room_slot) * (-1 if literal.Not else 1)
         else:
             return ((len(self.courses) * len(self.slots)) + (
-                    ((literal.course-1) * len(self.rooms)) + literal.room_slot)) * (
+                    ((literal.course - 1) * len(self.rooms)) + literal.room_slot)) * (
                        -1 if literal.Not else 1)
 
     def room_clash_constraint(self):
@@ -161,7 +160,8 @@ class TimeTabler:
         """
 
         for c in range(len(self.courses)):
-            clause = Clause(-1, at_most=self.courses[c].number_of_lectures, at_least=self.courses[c].number_of_lectures)
+            clause = Clause(-1, at_most=self.courses[c].number_of_lectures,
+                            at_least=self.courses[c].number_of_lectures)
             for s in range(len(self.slots)):
                 if self.courses[c].timing == "morning" and self.slots[s].start_time <= 5:
                     clause.add_literal(Literal(1, c + 1, s + 1, False))
@@ -178,8 +178,8 @@ class TimeTabler:
         for c in self.set1:
             for s in range(len(self.slots)):
                 clause = Clause(-1)
-                clause.add_literal(Literal(1, self.courses_to_int[c[0]]+1, s+1, True))
-                clause.add_literal(Literal(1, self.courses_to_int[c[1]]+1, s+1, True))
+                clause.add_literal(Literal(1, self.courses_to_int[c[0]] + 1, s + 1, True))
+                clause.add_literal(Literal(1, self.courses_to_int[c[1]] + 1, s + 1, True))
                 self.add_clause(clause)
 
     def preference_constraint(self):
@@ -190,9 +190,9 @@ class TimeTabler:
         for c in self.courses:
             for f in c.faculty:
                 for s in self.faculty_code_map[f]:
-                    var = s[0]*100 + s[1]
+                    var = s[0] * 100 + s[1]
                     clause = Clause(1)
-                    clause.add_literal(Literal(1, self.courses_to_int[c.code]+1, self.slot_to_index[var]+1, False))
+                    clause.add_literal(Literal(1, self.courses_to_int[c.code] + 1, self.slot_to_index[var] + 1, False))
                     self.add_clause(clause)
 
     def lecture_per_day_constraint(self):
@@ -206,8 +206,37 @@ class TimeTabler:
                 clause = Clause(-1, at_most=1)
                 for s in range(len(self.slots)):
                     if self.slots[s].day == d:
-                        clause.add_literal(Literal(1, c+1, s+1, False))
+                        clause.add_literal(Literal(1, c + 1, s + 1, False))
                 self.add_clause(clause)
+
+    def courses_in_same_type(self):
+        for c in range(len(self.courses)):
+            for s in range(len(self.slots)):
+                co = self.courses[c]
+                sl = self.slots[s]
+                if co.type.intersection(sl.type) != co.type:
+                    clause = Clause(1000)
+                    clause.add_literal(Literal(1, c + 1, s + 1, True))
+                    self.add_clause(clause)
+
+    def slots_enforced(self):
+        for c in range(len(self.courses)):
+            for sl in self.courses[c].slots:
+                clause = Clause(-1)
+                s = self.slot_to_index[sl.day * 100 + sl.start_time]
+                clause.add_literal(Literal(1, c + 1, s + 1, False))
+                self.add_clause(clause)
+
+    def room_enforced(self):
+        for c in range(len(self.courses)):
+            if self.courses[c].room_assigned():
+                if self.courses[c].room.name in self.room_to_index.keys():
+                    print(self.courses[c].room.name)
+                    r = self.room_to_index[self.courses[c].room.name]
+                    print(r)
+                    clause = Clause(-1)
+                    clause.add_literal(Literal(2, c + 1, r + 1, False))
+                    self.add_clause(clause)
 
     def solve(self):
         print("generating formula")
@@ -227,13 +256,13 @@ class TimeTabler:
             for s in range(len(self.slots)):
                 pos = self.convert_literal(Literal(1, c + 1, s + 1, False))
                 if len(model) >= pos:
-                    if model[pos-1] > 0:
+                    if model[pos - 1] > 0:
                         slots.append(self.slots[s])
             room = []
             for r in range(len(self.rooms)):
                 pos = self.convert_literal(Literal(2, c + 1, r + 1, False))
                 if len(model) >= pos:
-                    if model[pos-1] > 0:
+                    if model[pos - 1] > 0:
                         room.append(self.rooms[r])
             result[self.courses[c].code] = {"slots": slots, "room": room}
         return result, model, rc2

@@ -5,9 +5,9 @@ def generate_slots():
     slots = []
     for day in range(1, 6):
         for start_time in range(1, 6):
-            slots.append(Slot(day, start_time=start_time, end_time=start_time + 1))
+            slots.append(Slot(day, start_time, start_time + 1))
         for start_time in range(7, 11):
-            slots.append(Slot(day, start_time=start_time, end_time=start_time + 1))
+            slots.append(Slot(day, start_time, start_time + 1))
     return slots
 
 
