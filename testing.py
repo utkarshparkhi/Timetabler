@@ -4,36 +4,37 @@ from faculty import Faculty
 from timetabler import TimeTabler
 from utils import generate_slots, format_result
 
-# courses  = [[code, number_of_lectures, size, faculty, students, timing ,year ,type, slot, room]]
-courses = [["ECN-514", 3, 50, ["AJ"], [], "morning", 1],
-           ["ECN-611", 3, 50, ["AS", "AKC"], [], "morning", 1],
-           ["ECN-614", 3, 50, ["SK"], [], "morning", 1],
-           ["ECN-615", 3, 50, ["AT"], [], "morning", 1],
-           ["ECN-577", 3, 50, ["AD"], [], "morning", 1],
-           ["ECN-584", 3, 50, ["SD"], [], "morning", 1],
-           ["ECN-587", 3, 50, ["VSP"], [], "morning", 1],
-           ["ECN-591", 3, 50, ["BKK"], [], "morning", 1],
-           ["ECN-631", 3, 50, ["NPP", "DB"], [], "morning", 1],
-           ["ECN-534", 3, 50, ["DS"], [], "morning", 1],
-           ["ECN-550", 3, 50, ["RKP"], [], "morning", 1],
-           ["ECN-541", 3, 50, ["AP"], [], "morning", 1],
-           ["ECN-212", 3, 50, ["VP"], [], "morning", 1],
-           ["ECN-312", 3, 50, ["PMP"], [], "evening", 1],
-           ["ECN-316", 3, 50, ["DK"], [], "evening", 1],
-           ["ECN-102", 3, 50, ["DG", "BS"], [], "morning", 1],
-           ["ECN-104", 3, 50, ["BPD", "BK"], [], "morning", 1],
-           ["ECN-205", 3, 50, ["SR"], [], "morning", 1],
-           ["ECN-222", 3, 50, ["AB"], [], "morning", 1],
-           ["ECN-343", 3, 50, ["SM"], [], "evening", 1],
-           ["ECN-232", 3, 50, ["DB", "NPP"], [], "morning", 1],
-           ["ECN-342", 3, 50, ["KR"], [], "evening", 1], ]
+# courses  = [[code, number_of_lectures, number_of_practicals, size, faculty, students, timing ,year ,type, slot, room]]
+courses = [["ECN-514", 3, 0, 50, ["AJ"], [], "morning", 1],
+           ["ECN-611", 3, 0, 50, ["AS", "AKC"], [], "morning", 1],
+           ["ECN-614", 3, 0, 50, ["SK"], [], "morning", 1],
+           ["ECN-615", 3, 0, 50, ["AT"], [], "morning", 1],
+           ["ECN-577", 3, 0, 50, ["AD"], [], "morning", 1],
+           ["ECN-584", 3, 0, 50, ["SD"], [], "morning", 1],
+           ["ECN-587", 3, 0, 50, ["VSP"], [], "morning", 1],
+           ["ECN-591", 3, 0, 50, ["BKK"], [], "morning", 1],
+           ["ECN-631", 3, 0, 50, ["NPP", "DB"], [], "morning", 1],
+           ["ECN-534", 3, 0, 50, ["DS"], [], "morning", 1],
+           ["ECN-550", 3, 0, 50, ["RKP"], [], "morning", 1],
+           ["ECN-541", 3, 0, 50, ["AP"], [], "morning", 1],
+           ["ECN-212", 3, 0, 50, ["VP"], [], "morning", 1],
+           ["ECN-312", 3, 0, 50, ["PMP"], [], "evening", 1],
+           ["ECN-316", 3, 0, 50, ["DK"], [], "evening", 1],
+           ["ECN-102", 3, 1, 50, ["DG", "BS"], [], "morning", 1],
+           ["ECN-104", 3, 0, 50, ["BPD", "BK"], [], "morning", 1],
+           ["ECN-205", 3, 0, 50, ["SR"], [], "morning", 1],
+           ["ECN-222", 3, 0, 50, ["AB"], [], "morning", 1],
+           ["ECN-343", 3, 0, 50, ["SM"], [], "evening", 1],
+           ["ECN-232", 3, 0, 50, ["DB", "NPP"], [], "morning", 1],
+           ["ECN-342", 3, 0, 50, ["KR"], [], "evening", 1], ]
 
 # room = [[size,name]]
 rooms = [[100, "LHC-001"],
-         [40, "LHC-002"],
+         [100, "LHC-002"],
          [100, "LHC-003"],
          [100, "LHC-004"],
-         [100, "LHC-005"]]
+         [100, "LHC-005"], 
+         [100, "LHC-006"]]
 
 # faculty = [[code,[preference]]
 faculty = [["AJ", []],
@@ -107,8 +108,7 @@ course_pairs = [["ECN-212", "ECN-205"],
                 ["ECN-614", "ECN-615"],
                 ["ECN-614", "ECN-631"],
                 ["ECN-631", "ECN-615"],
-                ['ECN-541', "ECN-534"]
-                ]
+                ['ECN-541', "ECN-534"]]
 
 Faculties = []
 for fac in faculty:
@@ -142,5 +142,8 @@ t.lecture_per_day_constraint()
 t.course_clash_constraint()
 t.course_room_assignment()
 t.slot_assignment()
+t.practical_per_day_constraint()
+t.continuous_practical_assignment()
+t.practical_slot_assignment()
 t.preference_constraint()
 r, m, rc2 = t.solve()
