@@ -1,13 +1,13 @@
 from course import Course
-from room import Room
 from faculty import Faculty
-from timetabler import TimeTabler
-from utils import generate_slots, format_result
+from practicalTimetabler import PracticalTimetabler as TimeTabler
+from room import Room
+from utils import format_result, generate_slots
 
 # courses  = [[code, number_of_lectures, number_of_practicals, size, faculty, students, timing ,year ,type, slot, room]]
 courses = [["ECN-514", 3, 0, 50, ["AJ"], [], "morning", 1],
-           ["ECN-611", 3, 0, 50, ["AS", "AKC"], [], "morning", 1],
-           ["ECN-614", 3, 0, 50, ["SK"], [], "morning", 1],
+           ["ECN-611", 3, 0, 50, ["AS", "AKC"], [], "morning", 2],
+           ["ECN-614", 3, 0, 50, ["SK"], [], "morning", 2],
            ["ECN-615", 3, 0, 50, ["AT"], [], "morning", 1],
            ["ECN-577", 3, 0, 50, ["AD"], [], "morning", 1],
            ["ECN-584", 3, 0, 50, ["SD"], [], "morning", 1],
@@ -33,7 +33,7 @@ rooms = [[100, "LHC-001"],
          [100, "LHC-002"],
          [100, "LHC-003"],
          [100, "LHC-004"],
-         [100, "LHC-005"], 
+         [100, "LHC-005"],
          [100, "LHC-006"]]
 
 # faculty = [[code,[preference]]

@@ -1,7 +1,7 @@
 from course import Course
-from room import Room
 from faculty import Faculty
-from timetabler import TimeTabler
+from practicalTimetabler import PracticalTimetabler as TimeTabler
+from room import Room
 from utils import generate_slots
 
 # room = [[size,name]]
